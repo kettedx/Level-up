@@ -1,0 +1,53 @@
+.page-header {
+    padding: 24px 28px 0;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 16px;
+    background: var(--bg2);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+}
+
+.page-num {
+    font-family: var(--font-pixel);
+    font-size: 10px;
+    color: var(--bg);
+    background: var(--pink);
+    padding: 5px 10px;
+    border-radius: 4px;
+    box-shadow: 0 0 14px var(--pink-glow);
+}
+
+.page-title {
+    font-family: var(--font-pixel);
+    font-size: 13px;
+    color: var(--text);
+    letter-spacing: 2px;
+}
+
+.page-sub {
+    font-size: 10px;
+    color: var(--text3);
+    margin-left: auto;
+}
+.nav-icon img {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+    filter: brightness(0.7);
+    vertical-align: middle;
+}
+
+.nav-item.active .nav-icon img,
+.nav-item:hover .nav-icon img {
+    filter: brightness(1) drop-shadow(0 0 3px var(--pink));
+}
+
+.sidebar-logo .logo-img {
+    width: 44px;
+    height: 44px;
+    object-fit: contain;
+}

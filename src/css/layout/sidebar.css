@@ -1,0 +1,125 @@
+.sidebar {
+    width: var(--sidebar-w);
+    min-height: 100vh;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 100;
+}
+
+.sidebar-logo {
+    padding: 20px 16px 16px;
+    border-bottom: 1px solid var(--border);
+}
+
+.logo-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 2px;
+}
+
+.logo-icon {
+    width: 28px;
+    height: 28px;
+    background: var(--pink);
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: #fff;
+    font-family: var(--font-pixel);
+    flex-shrink: 0;
+}
+
+.logo-text {
+    font-family: var(--font-pixel);
+    font-size: 11px;
+    color: var(--pink);
+    letter-spacing: 1px;
+}
+
+.logo-sub {
+    font-size: 8px;
+    color: var(--text3);
+    font-family: var(--font-pixel);
+    margin-top: 2px;
+    padding-left: 36px;
+}
+
+.sidebar-nav {
+    flex: 1;
+    padding: 12px 0;
+    overflow-y: auto;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    font-size: 10px;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.2s;
+    border-left: 3px solid transparent;
+    white-space: nowrap;
+}
+
+.nav-item:hover {
+    color: var(--pink);
+    background: var(--pink-dim);
+    border-left-color: var(--pink);
+}
+
+.nav-item.active {
+    color: var(--pink);
+    background: var(--pink-dim);
+    border-left-color: var(--pink);
+    font-weight: 700;
+}
+
+.nav-icon {
+    width: 18px;
+    text-align: center;
+    font-size: 14px;
+}
+
+.sidebar-bottom {
+    border-top: 1px solid var(--border);
+    padding: 12px;
+}
+
+.focus-widget {
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 10px;
+}
+
+.focus-label {
+    color: var(--pink);
+    font-family: var(--font-pixel);
+    font-size: 7px;
+    margin-bottom: 4px;
+}
+
+.focus-status {
+    color: var(--text3);
+    font-size: 9px;
+    margin-bottom: 6px;
+}
+
+.focus-timer {
+    font-family: var(--font-pixel);
+    font-size: 16px;
+    color: var(--pink);
+    text-align: center;
+    text-shadow: 0 0 10px var(--pink-glow);
+}

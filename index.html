@@ -1,4 +1,823 @@
 <!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Level Up</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap"
+    rel="stylesheet">
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <link rel="stylesheet" href="src/css/style.css">
+</head>
+
+<body>
+
+
+  <div class="loading-screen" id="loadingScreen">
+    <img id="loadingLogo" class="loading-logo" src="" alt="LevelUp">
+    <div class="loading-text">CARREGANDO...</div>
+  </div>
+
+
+  <div class="auth-overlay" id="authOverlay">
+    <div class="auth-box">
+      <div class="auth-logo"><img id="authLogo" src="" alt="LevelUp" style="width:52px;height:52px;object-fit:contain;">
+      </div>
+      <div class="auth-title">⚡ LEVELUP DEV MODE</div>
+      <div class="auth-sub">Gamifique sua vida de dev</div>
+      <div class="auth-tabs">
+        <div class="auth-tab active" onclick="switchAuthTab('login')">LOGIN</div>
+        <div class="auth-tab" onclick="switchAuthTab('register')">CADASTRO</div>
+      </div>
+
+
+      <div class="auth-form active" id="loginForm">
+        <div class="auth-err" id="loginErr"></div>
+        <input class="auth-input" id="loginIdentifier" type="text" placeholder="Username ou e-mail">
+        <input class="auth-input" id="loginPassword" type="password" placeholder="Senha">
+        <button class="auth-btn" onclick="doLogin()">▶ ENTRAR</button>
+      </div>
+
+
+      <div class="auth-form" id="registerForm">
+        <div class="auth-err" id="registerErr"></div>
+        <input class="auth-input" id="regUsername" type="text" placeholder="Username (min. 3 chars)">
+        <input class="auth-input" id="regEmail" type="email" placeholder="E-mail">
+        <input class="auth-input" id="regPassword" type="password" placeholder="Senha (min. 6 chars)">
+        <div class="auth-label">Escolha seu avatar:</div>
+        <div class="auth-avatar-grid" id="authAvatarGrid"></div>
+        <input type="hidden" id="regAvatar" value="p-masc1">
+        <button class="auth-btn" onclick="doRegister()">✦ CRIAR CONTA</button>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="toast-container" id="toastContainer"></div>
+
+
+  <div class="modal-overlay hidden" id="shareModal">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeModal('shareModal')">×</button>
+      <div class="modal-title">🔗 COMPARTILHAR PROGRESSO</div>
+      <div style="font-size:9px;color:var(--text3);margin-bottom:10px;">Compartilhe seu perfil com o mundo:</div>
+      <div class="share-url" id="shareUrl"></div>
+      <button class="share-btn" onclick="copyShareUrl()">📋 COPIAR LINK</button>
+      <button class="share-btn" style="background:var(--bg3);border:1px solid var(--border);color:var(--text2);"
+        onclick="closeModal('shareModal')">FECHAR</button>
+    </div>
+  </div>
+
+
+  <div class="friends-backdrop" id="friendsBackdrop" onclick="handleBackdropClick(event,'friendsBackdrop')">
+    <div class="friends-panel" id="friendsPanel">
+      <div class="friends-header">
+        <div class="friends-title">👥 AMIGOS</div>
+        <button class="friends-close" onclick="toggleFriends()">×</button>
+      </div>
+      <div class="friends-add">
+        <input type="text" id="friendInput" placeholder="Adicionar por username..."
+          onkeydown="if(event.key==='Enter')sendFriendRequest()">
+        <button onclick="sendFriendRequest()">+</button>
+      </div>
+      <div class="friends-list" id="friendsList"></div>
+    </div>
+  </div>
+
+
+  <div class="chat-panel" id="chatPanel">
+    <div class="chat-header">
+      <div class="chat-header-title">💬 CHAT</div>
+      <button class="chat-close" onclick="toggleChat()">×</button>
+    </div>
+    <div class="chat-rooms" id="chatRooms">
+      <button class="chat-room-btn active" data-room="global" onclick="switchRoom('global')">🌐 Global</button>
+    </div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="chat-typing" id="chatTyping"></div>
+    <div class="chat-input-row">
+      <input class="chat-input" id="chatInput" type="text" placeholder="Digite uma mensagem..." maxlength="500">
+      <button class="chat-send" onclick="sendMessage()">➤</button>
+    </div>
+  </div>
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-top">
+        <div class="logo-icon">▲</div>
+        <div class="logo-text">LEVELUP</div>
+      </div>
+      <div class="logo-sub">DEV MODE</div>
+    </div>
+    <div class="sidebar-nav">
+      <div class="nav-item active" data-screen="dashboard"><span class="nav-icon">⊞</span> Dashboard</div>
+      <div class="nav-item" data-screen="missoes"><span class="nav-icon">⚔</span> Missões</div>
+      <div class="nav-item" data-screen="tarefas"><span class="nav-icon">✓</span> Tarefas</div>
+      <div class="nav-item" data-screen="status"><span class="nav-icon">◈</span> Status</div>
+      <div class="nav-item" data-screen="inventario"><span class="nav-icon">🎒</span> Inventário</div>
+      <div class="nav-item" data-screen="loja"><span class="nav-icon">🛒</span> Loja</div>
+      <div class="nav-item" data-screen="ranking"><span class="nav-icon">🏆</span> Ranking</div>
+      <div class="nav-item" data-screen="calendario"><span class="nav-icon">📅</span> Calendário</div>
+      <div class="nav-item" data-screen="analytics"><span class="nav-icon">📊</span> Analytics</div>
+      <div class="nav-item" data-screen="perfil"><span class="nav-icon">👤</span> Perfil</div>
+      <div class="nav-item" data-screen="config"><span class="nav-icon">⚙</span> Configurações</div>
+    </div>
+    <div class="sidebar-bottom">
+      <div class="focus-widget">
+        <div class="focus-label">🎯 FOCO MODE</div>
+        <div class="focus-status">Ativado</div>
+        <div class="focus-timer" id="timerDisplay">25:00</div>
+      </div>
+    </div>
+  </nav>
+  <div class="main">
+
+
+    <div class="page-header">
+      <div class="page-num" id="pageNum">01</div>
+      <div class="page-title" id="pageTitle">DASHBOARD (INÍCIO)</div>
+      <div class="page-sub" id="pageSub">Bem-vindo de volta, ShadowDev</div>
+      <div class="topbar-btns">
+        <button class="topbar-btn" onclick="toggleFriends()" id="friendsBtn">👥 Amigos <span class="notif-badge"
+            id="friendNotifBadge" style="display:none">0</span></button>
+        <button class="topbar-btn" onclick="toggleChat()" id="chatBtn">💬 Chat</button>
+      </div>
+    </div>
+
+    DASHBOARD
+    <div class="screen active" id="screen-dashboard">
+      <div class="card" style="margin-bottom:16px">
+        <div class="dash-top">
+          <div class="avatar-box"><img id="dashAvatarImg" src="" alt="avatar"></div>
+          <div class="dash-info">
+            <div class="dash-welcome">BEM-VINDO DE VOLTA,</div>
+            <div class="dash-name">ShadowDev</div>
+            <div class="dash-quote">"Disciplina hoje, liberdade amanhã."</div>
+          </div>
+          <div class="xp-total-box">
+            <div class="xp-lbl">XP TOTAL</div>
+            <div class="xp-val">1.250 XP</div>
+          </div>
+        </div>
+
+        <div class="level-row">
+          <div class="level-badge">
+            <span class="lv-word">LEVEL</span>
+            <span class="lv-num">4</span>
+          </div>
+          <div class="level-info">
+            <div class="lv-rank">DEV INICIANTE</div>
+            <div class="bar-wrap">
+              <div class="bar-fill" style="width:62.5%"></div>
+            </div>
+            <div class="lv-sub">1.250 / 2.000 XP &nbsp;•&nbsp; <span>FALTAM 750 XP PARA O LEVEL 5</span></div>
+          </div>
+        </div>
+
+        <div class="hero-banner"><img id="heroBanner" src="" alt="banner"
+            style="width:100%;height:100%;object-fit:cover;border-radius:6px;"></div>
+
+        <div class="three-cols">
+          <div>
+            <div class="mp-lbl">MISSÃO PRINCIPAL</div>
+            <div class="mp-name">Criar e lançar meu portfólio</div>
+            <div class="mini-bar">
+              <div class="mini-fill" style="width:60%"></div>
+            </div>
+            <div class="mp-foot"><span class="mp-pct">60%</span><span class="mp-reward">RECOMPENSA: +200 XP 🗡</span>
+            </div>
+          </div>
+          <div>
+            <div class="md-lbl">MISSÕES DIÁRIAS</div>
+            <div class="md-item">
+              <div class="md-check done">✓</div><span>Estudar programação por 30 min</span><span class="md-xp">+10
+                XP</span>
+            </div>
+            <div class="md-item">
+              <div class="md-check">✓</div><span>Fazer 15 flexões</span><span class="md-xp">+15 XP</span>
+            </div>
+            <div class="md-item">
+              <div class="md-check">✓</div><span>Editar um vídeo</span><span class="md-xp">+20 XP</span>
+            </div>
+            <a class="md-link">VER TODAS</a>
+          </div>
+          <div class="streak-box">
+            <div class="streak-fire">🔥</div>
+            <div class="streak-num">12</div>
+            <div class="streak-lbl">DIAS SEGUIDOS</div>
+            <div class="streak-days">
+              <div class="sday"><span>S</span>
+                <div class="sday-dot ok"></div>
+              </div>
+              <div class="sday"><span>T</span>
+                <div class="sday-dot ok"></div>
+              </div>
+              <div class="sday"><span>Q</span>
+                <div class="sday-dot ok"></div>
+              </div>
+              <div class="sday"><span>Q</span>
+                <div class="sday-dot ok"></div>
+              </div>
+              <div class="sday"><span>S</span>
+                <div class="sday-dot ok"></div>
+              </div>
+              <div class="sday"><span>S</span>
+                <div class="sday-dot"></div>
+              </div>
+              <div class="sday"><span>D</span>
+                <div class="sday-dot"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="card">
+          <div class="card-title">ATIVIDADES RECENTES</div>
+          <div class="ativ-row">
+            <div class="ativ-icon">📘</div>
+            <div class="ativ-text">Você estudou HTML</div>
+            <div class="ativ-xp">+10 XP</div>
+            <div class="ativ-time">2h atrás</div>
+          </div>
+          <div class="ativ-row">
+            <div class="ativ-icon">🎬</div>
+            <div class="ativ-text">Completou a missão "Editar vídeo"</div>
+            <div class="ativ-xp">+20 XP</div>
+            <div class="ativ-time">5h atrás</div>
+          </div>
+          <div class="ativ-row">
+            <div class="ativ-icon">💪</div>
+            <div class="ativ-text">Você treinou na academia</div>
+            <div class="ativ-xp">+15 XP</div>
+            <div class="ativ-time">Ontem</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">XP POR CATEGORIA (SEMANA)</div>
+          <div class="donut-row">
+            <svg class="donut-svg" viewBox="0 0 80 80">
+              <circle cx="40" cy="40" r="28" fill="none" stroke="#1a1525" stroke-width="13" />
+              <circle cx="40" cy="40" r="28" fill="none" stroke="#e91e8c" stroke-width="13"
+                stroke-dasharray="70.4 105.6" stroke-dashoffset="0" transform="rotate(-90 40 40)" />
+              <circle cx="40" cy="40" r="28" fill="none" stroke="#b0148a" stroke-width="13"
+                stroke-dasharray="52.8 123.2" stroke-dashoffset="-70.4" transform="rotate(-90 40 40)" />
+              <circle cx="40" cy="40" r="28" fill="none" stroke="#7a0a60" stroke-width="13"
+                stroke-dasharray="35.2 140.8" stroke-dashoffset="-123.2" transform="rotate(-90 40 40)" />
+              <circle cx="40" cy="40" r="28" fill="none" stroke="#4a0040" stroke-width="13"
+                stroke-dasharray="17.6 158.4" stroke-dashoffset="-158.4" transform="rotate(-90 40 40)" />
+            </svg>
+            <div>
+              <div class="legend-item">
+                <div class="legend-dot" style="background:#e91e8c"></div> Estudos 40%
+              </div>
+              <div class="legend-item">
+                <div class="legend-dot" style="background:#b0148a"></div> Projetos 30%
+              </div>
+              <div class="legend-item">
+                <div class="legend-dot" style="background:#7a0a60"></div> Saúde 20%
+              </div>
+              <div class="legend-item">
+                <div class="legend-dot" style="background:#4a0040"></div> Criatividade 10%
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="screen" id="screen-missoes">
+      <div class="card">
+        <div class="tab-bar">
+          <div class="tab active">PRINCIPAIS</div>
+          <div class="tab">SECUNDÁRIAS</div>
+          <div class="tab">DIÁRIAS</div>
+          <div class="tab">CONCLUÍDAS</div>
+        </div>
+        <div class="mission-item">
+          <div class="mission-ico">🗡</div>
+          <div class="mission-info">
+            <div class="mission-name">Criar e lançar meu portfólio</div>
+            <div class="mission-desc">Mostre seu trabalho para o mundo.</div>
+            <div class="mini-bar">
+              <div class="mini-fill" style="width:60%"></div>
+            </div>
+          </div>
+          <div class="mission-xp">+200 XP</div>
+        </div>
+        <div class="mission-item">
+          <div class="mission-ico">⚛</div>
+          <div class="mission-info">
+            <div class="mission-name">Aprender React</div>
+            <div class="mission-desc">Domine os fundamentos do React.</div>
+            <div class="mini-bar">
+              <div class="mini-fill" style="width:40%"></div>
+            </div>
+          </div>
+          <div class="mission-xp">+150 XP</div>
+        </div>
+        <div class="mission-item">
+          <div class="mission-ico">💻</div>
+          <div class="mission-info">
+            <div class="mission-name">Fazer 50 commits</div>
+            <div class="mission-desc">Constância é tudo!</div>
+            <div class="mini-bar">
+              <div class="mini-fill" style="width:30%"></div>
+            </div>
+          </div>
+          <div class="mission-xp">+100 XP</div>
+        </div>
+        <div class="mission-item">
+          <div class="mission-ico">📱</div>
+          <div class="mission-info">
+            <div class="mission-name">Publicar app na Play Store</div>
+            <div class="mission-desc">Lance seu primeiro app mobile.</div>
+            <div class="mini-bar">
+              <div class="mini-fill" style="width:10%"></div>
+            </div>
+          </div>
+          <div class="mission-xp">+250 XP</div>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="screen" id="screen-tarefas">
+      <div class="card">
+        <div class="tab-bar">
+          <div class="tab active">TODAS</div>
+          <div class="tab">ESTUDOS</div>
+          <div class="tab">PROJETOS</div>
+          <div class="tab">SAÚDE</div>
+          <div class="tab">OUTROS</div>
+        </div>
+        <div class="task-add" onclick="toggleTaskForm()">+ Adicionar nova tarefa<div class="task-add-btn">+</div>
+        </div>
+        <div class="task-add-form" id="taskAddForm">
+          <input type="text" id="newTaskTitle" placeholder="Nome da tarefa...">
+          <div class="task-form-row">
+            <select id="newTaskCategory">
+              <option value="estudos">Estudos</option>
+              <option value="projetos">Projetos</option>
+              <option value="saude">Saúde</option>
+              <option value="outros">Outros</option>
+            </select>
+            <select id="newTaskXp">
+              <option value="5">+5 XP</option>
+              <option value="10" selected>+10 XP</option>
+              <option value="15">+15 XP</option>
+              <option value="20">+20 XP</option>
+              <option value="30">+30 XP</option>
+            </select>
+          </div>
+          <div class="task-form-row">
+            <button class="task-form-btn" onclick="addTask()">✦ ADICIONAR</button>
+            <button class="task-form-cancel" onclick="toggleTaskForm()">CANCELAR</button>
+          </div>
+        </div>
+        <div id="tasksDynamic"></div>
+        <div class="task-item hidden-orig" style="display:none">
+          <div class="task-check done"></div><span class="task-name done">Estudar JavaScript por 30 min</span><span
+            class="task-xp">+10 XP</span>
+        </div>
+        <div class="task-item">
+          <div class="task-check done"></div><span class="task-name done">Terminar layout do site</span><span
+            class="task-xp">+30 XP</span>
+        </div>
+        <div class="task-item">
+          <div class="task-check done"></div><span class="task-name done">Editar vídeo para o YouTube</span><span
+            class="task-xp">+20 XP</span>
+        </div>
+        <div class="task-item">
+          <div class="task-check"></div><span class="task-name">Treinar na academia</span><span class="task-xp">+15
+            XP</span>
+        </div>
+        <div class="task-item">
+          <div class="task-check"></div><span class="task-name">Ler 10 páginas de um livro</span><span
+            class="task-xp">+10 XP</span>
+        </div>
+        <div class="task-item">
+          <div class="task-check"></div><span class="task-name">Beber 2L de água</span><span class="task-xp">+5
+            XP</span>
+        </div>
+        <div class="task-item">
+          <div class="task-check"></div><span class="task-name">Praticar inglês por 20 min</span><span
+            class="task-xp">+10 XP</span>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="screen" id="screen-status">
+      <div class="card">
+        <div class="status-item">
+          <div class="status-ico"><img src="" id="si_foco" style="width:20px;height:20px;object-fit:contain;"></div>
+          <div class="status-name">FOCO</div>
+          <div class="status-bar-wrap">
+            <div class="status-bar">
+              <div class="status-fill" style="width:78%"></div>
+            </div>
+            <div class="status-meta"><span class="val">78/100</span><span>NÍVEL 3</span></div>
+          </div>
+        </div>
+        <div class="status-item">
+          <div class="status-ico"><img src="" id="si_energia" style="width:20px;height:20px;object-fit:contain;"></div>
+          <div class="status-name">ENERGIA</div>
+          <div class="status-bar-wrap">
+            <div class="status-bar">
+              <div class="status-fill" style="width:65%"></div>
+            </div>
+            <div class="status-meta"><span class="val">65/100</span><span>NÍVEL 2</span></div>
+          </div>
+        </div>
+        <div class="status-item">
+          <div class="status-ico"><img src="" id="si_disciplina" style="width:20px;height:20px;object-fit:contain;">
+          </div>
+          <div class="status-name">DISCIPLINA</div>
+          <div class="status-bar-wrap">
+            <div class="status-bar">
+              <div class="status-fill" style="width:82%"></div>
+            </div>
+            <div class="status-meta"><span class="val">82/100</span><span>NÍVEL 4</span></div>
+          </div>
+        </div>
+        <div class="status-item">
+          <div class="status-ico"><img src="" id="si_criatividade" style="width:20px;height:20px;object-fit:contain;">
+          </div>
+          <div class="status-name">CRIATIVIDADE</div>
+          <div class="status-bar-wrap">
+            <div class="status-bar">
+              <div class="status-fill" style="width:60%"></div>
+            </div>
+            <div class="status-meta"><span class="val">60/100</span><span>NÍVEL 2</span></div>
+          </div>
+        </div>
+        <div class="status-item">
+          <div class="status-ico"><img src="" id="si_saude" style="width:20px;height:20px;object-fit:contain;"></div>
+          <div class="status-name">SAÚDE</div>
+          <div class="status-bar-wrap">
+            <div class="status-bar">
+              <div class="status-fill" style="width:70%"></div>
+            </div>
+            <div class="status-meta"><span class="val">70/100</span><span>NÍVEL 3</span></div>
+          </div>
+        </div>
+        <div class="status-item">
+          <div class="status-ico"><img src="" id="si_dinheiro" style="width:20px;height:20px;object-fit:contain;"></div>
+          <div class="status-name">DINHEIRO</div>
+          <div class="status-bar-wrap">
+            <div class="status-bar">
+              <div class="status-fill" style="width:45%"></div>
+            </div>
+            <div class="status-meta"><span class="val">45/100</span><span>NÍVEL 1</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="screen" id="screen-inventario">
+      <div class="card" style="text-align:center;padding:60px;color:var(--text3)">
+        <div style="font-size:40px;margin-bottom:12px">🎒</div>
+        <div style="font-family:var(--font-pixel);font-size:10px;color:var(--pink)">SEU INVENTÁRIO</div>
+        <div style="margin-top:8px;font-size:11px">Itens equipados e coletados aparecerão aqui.</div>
+      </div>
+    </div>
+
+
+    <div class="screen" id="screen-loja">
+      <div class="card">
+        <div class="loja-top">
+          <div class="loja-title">LOJA</div>
+          <div class="moedas">🪙 450</div>
+        </div>
+        <div class="tab-bar">
+          <div class="tab active">TODOS</div>
+          <div class="tab">AVATARES</div>
+          <div class="tab">TEMAS</div>
+          <div class="tab">EFEITOS</div>
+          <div class="tab">OUTROS</div>
+        </div>
+        <div class="loja-grid">
+          <div class="loja-item">
+            <div class="loja-thumb"><img id="lojaImg_item_001" src="" alt=""></div>
+            <div class="loja-name">Gato Hacker</div>
+            <div class="loja-price">🪙 200</div>
+          </div>
+          <div class="loja-item">
+            <div class="loja-thumb"><img id="lojaImg_item_002" src="" alt=""></div>
+            <div class="loja-name">Gcluos Cyber</div>
+            <div class="loja-price">🪙 150</div>
+          </div>
+          <div class="loja-item">
+            <div class="loja-thumb" style="background:linear-gradient(135deg,#0d0020,#1a004a)"><img
+                id="lojaImg_item_007" src="" alt=""></div>
+            <div class="loja-name">Fundo Neon</div>
+            <div class="loja-price">🪙 —</div>
+          </div>
+          <div class="loja-item">
+            <div class="loja-thumb"><img id="lojaImg_item_005" src="" alt=""></div>
+            <div class="loja-name">Espada Pixel</div>
+            <div class="loja-price">🪙 300</div>
+          </div>
+          <div class="loja-item">
+            <div class="loja-thumb" style="background:radial-gradient(circle,#ff2fa033,#0d0014)"><img
+                id="lojaImg_item_006" src="" alt=""></div>
+            <div class="loja-name">Aura Rosa</div>
+            <div class="loja-price">🪙 300</div>
+          </div>
+          <div class="loja-item">
+            <div class="loja-thumb" style="background:linear-gradient(135deg,#001a00,#00ff4411)"><img
+                id="lojaImg_item_008" src="" alt=""></div>
+            <div class="loja-name">Tema Matrix</div>
+            <div class="loja-price">🪙 300</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="screen" id="screen-ranking">
+      <div class="card">
+        <div class="tab-bar">
+          <div class="tab active">GLOBAL</div>
+          <div class="tab">AMIGOS</div>
+          <div class="tab">SEMANA</div>
+          <div class="tab">MÊS</div>
+        </div>
+        <table class="rank-table">
+          <thead>
+            <tr>
+              <th>POSIÇÃO</th>
+              <th>USUÁRIO</th>
+              <th>LEVEL</th>
+              <th>XP</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="rank-row">
+              <td>👑</td>
+              <td>
+                <div class="rank-user">
+                  <div class="rank-av">🧑</div><span>CodeMaster</span>
+                </div>
+              </td>
+              <td>12</td>
+              <td class="rank-xp-val">4.560 XP</td>
+            </tr>
+            <tr class="rank-row">
+              <td>🥈</td>
+              <td>
+                <div class="rank-user">
+                  <div class="rank-av">🧑</div><span>DevNinja</span>
+                </div>
+              </td>
+              <td>10</td>
+              <td class="rank-xp-val">3.200 XP</td>
+            </tr>
+            <tr class="rank-row me">
+              <td>🥉</td>
+              <td>
+                <div class="rank-user">
+                  <div class="rank-av">🧑‍💻</div><span class="rn">ShadowDev</span>
+                </div>
+              </td>
+              <td>4</td>
+              <td class="rank-xp-val">1.250 XP</td>
+            </tr>
+            <tr class="rank-row">
+              <td>4</td>
+              <td>
+                <div class="rank-user">
+                  <div class="rank-av">🧑</div><span>PixelGuy</span>
+                </div>
+              </td>
+              <td>3</td>
+              <td class="rank-xp-val">980 XP</td>
+            </tr>
+            <tr class="rank-row">
+              <td>5</td>
+              <td>
+                <div class="rank-user">
+                  <div class="rank-av">🧑</div><span>LunaaDev</span>
+                </div>
+              </td>
+              <td>2</td>
+              <td class="rank-xp-val">750 XP</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+
+    <div class="screen" id="screen-calendario">
+      <div class="card">
+        <div class="cal-header">
+          <button class="cal-nav">‹</button>
+          <div class="cal-month">Maio 2024</div>
+          <button class="cal-nav">›</button>
+        </div>
+        <div class="cal-grid">
+          <div class="cal-dn">SEG</div>
+          <div class="cal-dn">TER</div>
+          <div class="cal-dn">QUA</div>
+          <div class="cal-dn">QUI</div>
+          <div class="cal-dn">SEX</div>
+          <div class="cal-dn">SÁB</div>
+          <div class="cal-dn">DOM</div>
+          <div class="cal-day other">29</div>
+          <div class="cal-day other">30</div>
+          <div class="cal-day">1<div class="cal-dot m"></div>
+          </div>
+          <div class="cal-day">2</div>
+          <div class="cal-day">3<div class="cal-dot t"></div>
+          </div>
+          <div class="cal-day">4</div>
+          <div class="cal-day">5<div class="cal-dot s"></div>
+          </div>
+          <div class="cal-day">6</div>
+          <div class="cal-day">7</div>
+          <div class="cal-day">8<div class="cal-dot m"></div>
+          </div>
+          <div class="cal-day">9</div>
+          <div class="cal-day">10</div>
+          <div class="cal-day">11</div>
+          <div class="cal-day">12<div class="cal-dot s"></div>
+          </div>
+          <div class="cal-day">13</div>
+          <div class="cal-day">14</div>
+          <div class="cal-day today">15</div>
+          <div class="cal-day">16<div class="cal-dot t"></div>
+          </div>
+          <div class="cal-day">17</div>
+          <div class="cal-day">18</div>
+          <div class="cal-day">19<div class="cal-dot m"></div>
+          </div>
+          <div class="cal-day">20</div>
+          <div class="cal-day">21</div>
+          <div class="cal-day">22</div>
+          <div class="cal-day">23</div>
+          <div class="cal-day">24</div>
+          <div class="cal-day">25<div class="cal-dot s"></div>
+          </div>
+          <div class="cal-day">26</div>
+          <div class="cal-day">27</div>
+          <div class="cal-day">28<div class="cal-dot t"></div>
+          </div>
+          <div class="cal-day">29</div>
+          <div class="cal-day">30</div>
+          <div class="cal-day">31<div class="cal-dot m"></div>
+          </div>
+          <div class="cal-day other">1</div>
+          <div class="cal-day other">2</div>
+        </div>
+        <div class="cal-legend">
+          <div class="cal-li">
+            <div class="cal-ld" style="background:var(--pink)"></div> Missões concluídas
+          </div>
+          <div class="cal-li">
+            <div class="cal-ld" style="background:var(--pink2)"></div> Tarefas concluídas
+          </div>
+          <div class="cal-li">
+            <div class="cal-ld" style="background:var(--yellow)"></div> Streak
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="screen" id="screen-analytics">
+      <div class="card" style="margin-bottom:16px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <span></span>
+          <select
+            style="background:var(--bg3);border:1px solid var(--border);color:var(--text2);font-size:9px;padding:4px 8px;border-radius:3px;font-family:var(--font-mono)">
+            <option>Esta semana</option>
+            <option>Este mês</option>
+          </select>
+        </div>
+        <div class="analy-kpis">
+          <div class="kpi">
+            <div class="kpi-lbl">XP TOTAL</div>
+            <div class="kpi-val">420 XP</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-lbl">TAREFAS CONCLUÍDAS</div>
+            <div class="kpi-val white">28</div>
+          </div>
+        </div>
+        <div class="chart-lbl">XP POR DIA</div>
+        <div class="chart-bars">
+          <div class="bar-col-wrap">
+            <div class="bar-col" style="height:35%"></div>
+            <div class="bar-day">Seg</div>
+          </div>
+          <div class="bar-col-wrap">
+            <div class="bar-col" style="height:55%"></div>
+            <div class="bar-day">Ter</div>
+          </div>
+          <div class="bar-col-wrap">
+            <div class="bar-col" style="height:70%"></div>
+            <div class="bar-day">Qua</div>
+          </div>
+          <div class="bar-col-wrap">
+            <div class="bar-col" style="height:45%"></div>
+            <div class="bar-day">Qui</div>
+          </div>
+          <div class="bar-col-wrap">
+            <div class="bar-col" style="height:90%"></div>
+            <div class="bar-day">Sex</div>
+          </div>
+          <div class="bar-col-wrap">
+            <div class="bar-col" style="height:30%"></div>
+            <div class="bar-day">Sáb</div>
+          </div>
+          <div class="bar-col-wrap">
+            <div class="bar-col" style="height:20%"></div>
+            <div class="bar-day">Dom</div>
+          </div>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="card">
+          <div class="card-title">TEMPO PRODUTIVO</div>
+          <div class="analy-time-val">12h 45m</div>
+        </div>
+        <div class="card">
+          <div class="card-title">CATEGORIAS</div>
+          <div class="cat-item"><span class="cat-name">Estudos</span>
+            <div class="cat-bar-wrap">
+              <div class="cat-bar-fill" style="width:40%"></div>
+            </div><span class="cat-pct">40%</span>
+          </div>
+          <div class="cat-item"><span class="cat-name">Projetos</span>
+            <div class="cat-bar-wrap">
+              <div class="cat-bar-fill" style="width:30%"></div>
+            </div><span class="cat-pct">30%</span>
+          </div>
+          <div class="cat-item"><span class="cat-name">Saúde</span>
+            <div class="cat-bar-wrap">
+              <div class="cat-bar-fill" style="width:20%"></div>
+            </div><span class="cat-pct">20%</span>
+          </div>
+          <div class="cat-item"><span class="cat-name">Outros</span>
+            <div class="cat-bar-wrap">
+              <div class="cat-bar-fill" style="width:10%"></div>
+            </div><span class="cat-pct">10%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="screen" id="screen-perfil">
+      <div class="card" style="max-width:520px">
+        <div class="perfil-top">
+          <div class="perfil-avatar"><img id="perfilAvatarImg" src="" alt="avatar"></div>
+          <div>
+            <div class="perfil-name">ShadowDev</div>
+            <div class="perfil-rank">DEV INICIANTE</div>
+            <div class="perfil-lv">LEVEL 4</div>
+            <div class="perfil-xpbar">
+              <div class="perfil-xpfill" style="width:62.5%"></div>
+            </div>
+            <div class="perfil-xpval">1.250 / 2.000 XP</div>
+          </div>
+        </div>
+        <div class="ps-row"><span class="ps-key">MEMBRO DESDE</span><span class="ps-val">15/04/2024</span></div>
+        <div class="ps-row"><span class="ps-key">MISSÕES CONCLUÍDAS</span><span class="ps-val">12</span></div>
+        <div class="ps-row"><span class="ps-key">TAREFAS CONCLUÍDAS</span><span class="ps-val">89</span></div>
+        <div class="ps-row"><span class="ps-key">DIAS DE STREAK</span><span class="ps-val">12</span></div>
+        <div class="ps-row"><span class="ps-key">XP TOTAL</span><span class="ps-val">1.250 XP</span></div>
+        <div style="margin-top:14px;">
+          <div style="font-size:8px;color:var(--text3);margin-bottom:6px;">TROCAR AVATAR:</div>
+          <div class="avatar-picker" id="profileAvatarPicker"></div>
+        </div>
+        <button class="edit-btn" onclick="saveProfile()">💾 SALVAR PERFIL</button>
+        <button class="edit-btn" style="margin-top:6px;background:var(--pink-dim);" onclick="openShareModal()">🔗
+          COMPARTILHAR PERFIL</button>
+      </div>
+    </div>
+
+
+    <div class="screen" id="screen-config">
+      <div class="card" style="text-align:center;padding:60px;color:var(--text3)">
+        <div style="font-size:40px;margin-bottom:12px">⚙️</div>
+        <div style="font-family:var(--font-pixel);font-size:10px;color:var(--pink)">CONFIGURAÇÕES</div>
+        <div style="margin-top:8px;font-size:11px">Preferências e ajustes do sistema.</div>
+      </div>
+    </div>
+
+  </div>
+  <script src="src/js/script.js"></script>
+</body>
+
+</html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>

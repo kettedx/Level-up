@@ -1,0 +1,22 @@
+.screen {
+    display: none;
+    flex: 1;
+    padding: 24px 28px;
+    animation: fadeIn 0.25s ease;
+}
+
+.screen.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(6px)
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0)
+    }
+}
