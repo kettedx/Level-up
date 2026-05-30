@@ -1,0 +1,20 @@
+:root {
+    --bg: #0d0a0f;
+    --bg2: #13101a;
+    --bg3: #1a1525;
+    --card: #160f1e;
+    --card2: #1e1530;
+    --pink: #e91e8c;
+    --pink2: #ff2fa0;
+    --pink-glow: rgba(233, 30, 140, 0.35);
+    --pink-dim: rgba(233, 30, 140, 0.15);
+    --text: #f0e6ff;
+    --text2: #b8a8d0;
+    --text3: #7a6a90;
+    --yellow: #ffd700;
+    --border: rgba(233, 30, 140, 0.22);
+    --sidebar-w: 210px;
+    --font-pixel: 'Press Start 2P', monospace;
+    --font-mono: 'Share Tech Mono', monospace;
+    --font-title: 'Orbitron', sans-serif;
+}

@@ -1,0 +1,51 @@
+.status-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.status-ico {
+    font-size: 18px;
+    width: 24px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.status-name {
+    font-family: var(--font-pixel);
+    font-size: 7px;
+    color: var(--text2);
+    width: 80px;
+    flex-shrink: 0;
+}
+
+.status-bar-wrap {
+    flex: 1;
+}
+
+.status-bar {
+    height: 8px;
+    background: var(--bg3);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 3px;
+}
+
+.status-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--pink), var(--pink2));
+    border-radius: 4px;
+}
+
+.status-meta {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    font-size: 8px;
+    color: var(--text3);
+}
+
+.status-meta .val {
+    color: var(--text2);
+}

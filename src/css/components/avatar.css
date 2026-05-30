@@ -1,0 +1,30 @@
+.avatar-picker {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+    margin-top: 10px;
+}
+
+.avatar-picker-item {
+    aspect-ratio: 1;
+    border: 2px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    overflow: hidden;
+    transition: all .2s;
+}
+
+.avatar-picker-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-picker-item.selected {
+    border-color: var(--pink);
+    box-shadow: 0 0 8px var(--pink-glow);
+}
+
+.avatar-picker-item:hover {
+    border-color: var(--pink);
+}
